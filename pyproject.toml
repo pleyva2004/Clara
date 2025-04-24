@@ -15,6 +15,7 @@ google-auth-oauthlib = "^1.2.0"
 google-auth-httplib2 = "^0.2.0"
 google-api-python-client = "^2.120.0"
 mysql-connector-python = "^9.3.0"
+imap-tools = "^1.10.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"

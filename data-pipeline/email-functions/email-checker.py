@@ -11,53 +11,55 @@ def get_email_from():
             print("Email found and parsing...")
             body = ''
             
-            if "Re: " in msg.subject:
-                print("Response Email...")
-                # print(msg.subject)
+            # if "Re: " in msg.subject:
+            #     print("Response Email...")
+            #     # print(msg.subject)
 
 
-                # Saving attachments into assets folder
-                # for att in msg.attachments:
-                    # Print attachment info
-                    # print(f"Attachment name: {att.filename}")
-                    # print(f"Attachment type: {att.content_type}")
+            #     # Saving attachments into assets folder
+            #     # for att in msg.attachments:
+            #         # Print attachment info
+            #         # print(f"Attachment name: {att.filename}")
+            #         # print(f"Attachment type: {att.content_type}")
                     
-                    # # Save the attachment
-                    # with open(f"downloads/{att.filename}", "wb") as f:
-                    #     f.write(att.payload)
-                    # print(f"Saved attachment: {att.filename}")
+            #         # # Save the attachment
+            #         # with open(f"downloads/{att.filename}", "wb") as f:
+            #         #     f.write(att.payload)
+            #         # print(f"Saved attachment: {att.filename}")
                                 
-                array = msg.text.split('\n')
+            #     array = msg.text.split('\n')
 
-                # Remove all lines that start with '>' or '>>' and filter out njitshpe/njit.edu lines
-                array = [line for line in array if not (line.startswith('>') or 'njitshpe' in line or 'njit.edu' in line) and len(line) > 1]
+            #     # Remove all lines that start with '>' or '>>' and filter out njitshpe/njit.edu lines
+            #     array = [line for line in array if not (line.startswith('>') or 'njitshpe' in line or 'njit.edu' in line) and len(line) > 1]
 
-                length = len(array)
-                i = 0 
-                while i < length:
+            #     length = len(array)
+            #     i = 0 
+            #     while i < length:
 
-                    # Iterate through the array in reverse order
-                    line = array[length - i - 1]
+            #         # Iterate through the array in reverse order
+            #         line = array[length - i - 1]
 
-                    # Check for any word followed by comma and carriage return
-                    if re.search(r'\w+,\r', line):
-                        print('Signature found')
-                        break
+            #         # Check for signature pattern (1-2 words followed by comma and carriage return)
+            #         if re.search(r'^\w+(?:\s+\w+)?,\r$', line) or re.search(r'^-- \r', line):
+            #             print('Signature found')
+            #             break
 
-                    i += 1
+            #         i += 1
 
-                updated_length = len(array)
+            #     for j in range(i):
+            #         # Iterate through the array in forward order
+            #         line = array[j]
 
-                while i < updated_length:
+            #         # Stop if we find "My Best,"
+            #         if "My Best," in line:
+            #             print('Signature found')
+            #             break
 
-                    # Iterate through the array in forward order
-                    line = array[i]
+            #         print(line[:-1])
+            #         body += line[:-1] + " "
 
-                    print(line[:-1])
-                    body += line[:-1] + " "
 
-            elif "SHPE" in msg.subject or "SHPE" in msg.from_:
-                print("SHPE Email...")
+            print("SHPE Email...")
                 # print(msg.subject)
 
 
@@ -74,35 +76,36 @@ def get_email_from():
 
                     
                 #PARSING MSG.TEXT
-                array = msg.text.split('\n')
+            array = msg.text.split('\n')
 
-                # Remove all lines that start with '>' or '>>' and filter out njitshpe/njit.edu lines
-                array = [line for line in array if not (line.startswith('>') or 'njitshpe' in line or 'njit.edu' in line) and len(line) > 1]
-                
-                length = len(array)
-                for i in range(length):
+            # Remove all lines that start with '>' or '>>' and filter out njitshpe/njit.edu lines
+            array = [line for line in array if not (line.startswith('>') or 'njitshpe' in line or 'njit.edu' in line) and len(line) > 1]
+            print(array)
 
-                    # Iterate through the array in reverse order
-                    line = array[length - i - 1]
+            length = len(array)
+            # Initiate index
+            i = 0 
+            # Initiate index for reverse
+            j = 0
+            while i < length:
+                # Iterate through the array in reverse order
+                j = length - i - 1
+                line = array[j]
 
-                    if len(line) > 1:
-                        array.pop(length - i - 1)
+                # Check for signature pattern (1-2 words followed by comma and carriage return)
+                if re.search(r'^\w+(?:\s+\w+)?,\r$', line) or re.search(r'^-- \r', line):
+                    print('Signature found')
+                    break
+                i += 1
 
-                        # Check for any word followed by comma and carriage return
-                        if re.search(r'\w+,\r', line):
-                            print('Signature found')
-                            break
-                        
-                for i in range(len(array)):
 
-                    # Iterate through the array in forward order
-                    line = array[i]
+            # After signature is found, iterate through the array in forward order
 
-                    # If the line does not contain 'njitshpe' or 'njit.edu' and is longer than 1 character
-                    if len(line) > 1:
-                        
-                        print(line[:-1])
-                        body += line[:-1] + " "
+            # Line index for Iterate through the array in forward order
+            for line in range(j):
+                line = array[line]
+                print(line[:-1])
+                body += line[:-1] + " "
 
             return body, msg.from_, msg.subject    
 print(get_email_from())

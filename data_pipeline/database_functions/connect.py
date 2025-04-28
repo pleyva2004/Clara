@@ -1,6 +1,6 @@
 import mysql.connector
 from mysql.connector import Error
-
+# Connect to the database otherwise return None
 def get_connection(servername, username, password, dbname):
     try:
         # Establishing the connection
@@ -12,9 +12,7 @@ def get_connection(servername, username, password, dbname):
         )
         if conn.is_connected():
             print("CONNECTED")
+            return conn
     except Error as e:
         print(f"Failed to connect to MySQL: {e}")
-    finally:
-        # Closing the connection
-        if 'conn' in locals() and conn.is_connected():
-            conn.close()
+        return None

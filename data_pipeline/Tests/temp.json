@@ -1,0 +1,9 @@
+{
+    "Header": "parsed_email",
+    "Body": {
+        "Sender": "SHPE_member@njit.edu", 
+        "Subject": "SHPE E-Board Meeting",
+        "Email_Contents": "Hello you are invited to the SHPE E-board meeting", 
+        "Attachments":  "TBD"
+    }
+}

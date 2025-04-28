@@ -24,3 +24,6 @@
 - Log successful insertions and any errors
 - Implement error handling and retry logic
 
+#### Dependinces Installation
+php: apt install php
+php-mysql: apt install php-mysql

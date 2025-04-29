@@ -11,7 +11,7 @@ def main():
     validation = client.validateMessage(message, full_response, email)
     
     # Save validation results to JSON file
-    # First ensure we have a proper dictionary
+    # First ensure we have a proper dictionaryS
     if isinstance(validation, str):
         validation_json = json.loads(validation.replace('```json\n', '').replace('\n```', ''))
     

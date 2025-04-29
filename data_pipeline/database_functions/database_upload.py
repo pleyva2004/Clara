@@ -1,5 +1,5 @@
 import json
-from data_pipeline.database_functions import get_connection
+from connect import get_connection
 
 # Takes the already parsed data and puts it into the database
 '''

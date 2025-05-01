@@ -1,5 +1,3 @@
-"""
-llm-engineering package
-"""
+from .application.services import Clara
 
-__version__ = "0.1.0" 
+__all__ = ["Clara"]

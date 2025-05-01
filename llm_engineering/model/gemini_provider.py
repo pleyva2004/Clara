@@ -37,7 +37,7 @@ class GeminiClient:
             config.system_instruction = system_instruction
             
         response = self.client.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-2.0-flash-lite",
             contents=prompt,
             config=config
         )

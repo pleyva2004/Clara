@@ -1,5 +1,5 @@
 # main.py
-from llm_engineering.application.services import Clara
+from llm_engineering import Clara
 import json 
 
 def main():

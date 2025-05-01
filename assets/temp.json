@@ -1,0 +1,10 @@
+{
+    "Header": "parsed_email",
+    "Body": {
+        "Partner": "Lior Biton",
+        "Sender": "ultron895@gmail.com",
+        "Subject": "Testing for Alumni",
+        "Email_Contents": "Hello NJIT SHPE, my name is Lior Biton and I'm looking to connect with you guys. ",
+        "Attachments": "TBD"
+    }
+}

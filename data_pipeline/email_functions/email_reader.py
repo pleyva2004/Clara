@@ -1,12 +1,11 @@
 from imap_tools import MailBox
 import re
 
-MAIL_PASSWORD = "gwjamkdovezjlfho" 
-MAIL_USERNAME = "njitshpe@gmail.com"
 
-def getEmail():
+def getEmail(email_address: str, password: str, imap_server: str = "imap.gmail.com"):
+
     # Get date, subject and body len of all emails from INBOX folder
-    with MailBox('imap.gmail.com').login(MAIL_USERNAME, MAIL_PASSWORD) as mailbox:
+    with MailBox(imap_server).login(email_address, password) as mailbox:
         for msg in mailbox.fetch(limit=1, reverse=True):
             body = ''
             
@@ -60,4 +59,11 @@ def getEmail():
                 print(line[:-1])
                 body += line[:-1] + " "
 
-            return body, msg.from_, msg.subject    
+            dict = {
+                "Company": "SHPE",
+                "Sender": msg.from_,
+                "Subject": msg.subject,
+                "Email_Contents": body,
+                "Attachments": [] #
+            }
+            return dict

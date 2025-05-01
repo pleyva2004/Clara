@@ -1,4 +1,6 @@
 from data_pipeline.email_functions import monitor_inbox, getEmail
+from llm_engineering import Clara
+
 from dotenv import load_dotenv
 import os
 import json
@@ -22,7 +24,18 @@ def main():
         print("Email read and converted successfully!")
 
         # Call Email Classifier HERE
+
+        client = Clara()
+        sender = email_data["Sender"]
+        subject = email_data["Subject"]
+        email = email_data["Email_Contents"]
+        classification = client.classifyEmail(sender, subject, email)
+
+        if isinstance(classification, str):
+            classification_json = json.loads(classification.replace('```json\n', '').replace('\n```', ''))
         
+        print(json.dumps(classification_json, indent=4))
+
         # Call the DATA BASE FUNCTIONs HERE
 
         # Call CLARA HERE

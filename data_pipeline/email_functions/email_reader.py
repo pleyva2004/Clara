@@ -33,13 +33,15 @@ def getEmail(email_address: str, password: str, imap_server: str = "imap.gmail.c
 
             # Remove all lines that start with '>' or '>>' and filter out njitshpe/njit.edu lines
             array = [line for line in array if not (line.startswith('>') or 'njitshpe' in line or 'njit.edu' in line) and len(line) > 1]
-            print(array)
+            # print(array)
 
             length = len(array)
             # Initiate index
             i = 0 
             # Initiate index for reverse
             j = 0
+
+            signature_found = False
             while i < length:
                 # Iterate through the array in reverse order
                 j = length - i - 1
@@ -48,10 +50,13 @@ def getEmail(email_address: str, password: str, imap_server: str = "imap.gmail.c
                 # Check for signature pattern (1-2 words followed by comma and carriage return)
                 if re.search(r'^\w+(?:\s+\w+)?,\r$', line) or re.search(r'^-- \r', line):
                     print('Signature found')
+                    signature_found = True
                     break
                 i += 1
 
             # After signature is found, iterate through the array in forward order
+            if not signature_found:
+                j = length
 
             # Line index for Iterate through the array in forward order
             for line in range(j):

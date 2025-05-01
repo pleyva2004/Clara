@@ -1,3 +1,26 @@
+def email_classifier_prompt(sender: str, subject: str, body_snippet: str) -> str:
+    prompt = f"""
+    Classify the following email and return a JSON object with the following structure:
+    {{
+        "category": "Alumni" | "Company" | "Internal NJIT Partner" | "Unrelated",
+        "meta_data": "string"
+    }}
+
+    Rules for meta_data:
+    - If category is "Company": meta_data should be the company name
+    - If category is "Alumni": meta_data should be the alumni name
+    - If category is "Internal NJIT Partner": meta_data should be the partner name
+    - If category is "Unrelated": meta_data should be "Unrelated"
+
+    Email from: {sender}
+    Subject: {subject}
+    Body snippet: {body_snippet}
+
+    Return ONLY the JSON object and nothing else.
+    """
+    return prompt
+
+
 def readEmailPrompt(email: str) -> str:
     prompt = f"""
 

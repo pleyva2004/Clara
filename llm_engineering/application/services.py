@@ -1,4 +1,4 @@
-from ..model.operations import readEmailLLM, createMessageLLM, validateMessageLLM
+from ..model.operations import readEmailLLM, createMessageLLM, validateMessageLLM, classifyEmail
 
 
 
@@ -6,6 +6,11 @@ class Clara:
     
     def __init__(self):
         print("Clara is being initialized")
+
+    def classifyEmail(self, sender: str, subject: str, body_snippet: str):
+        print("Classifying email...")
+        response = classifyEmail(sender, subject, body_snippet)
+        return response
     
     def readEmail(self, input_email: str):
         print("Reading email...")

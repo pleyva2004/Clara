@@ -1,4 +1,8 @@
-from .email_checker import getEmail
-from .email_sender import sendEmail
+"""
+Email functions package initialization
+"""
 
-__all__ = ['getEmail', 'sendEmail']
+from .email_reader import getEmail
+from .email_listener import check_new_emails, monitor_inbox
+
+__all__ = ['getEmail', 'check_new_emails', 'monitor_inbox']

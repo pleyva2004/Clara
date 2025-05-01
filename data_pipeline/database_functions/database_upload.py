@@ -1,6 +1,5 @@
 import json
 import re
-from connect import get_connection
 
 # Takes the already parsed data and puts it into the database
 '''
@@ -60,6 +59,3 @@ def extract(conn, file_path):
             print("Database connection closed")
 
 
-json_file_path = "/home/lior/GitRepo/Clara/data_pipeline/Tests/test2.json" # Must give a path the the 
-conn = get_connection("sql1.njit.edu", "lb356", "123Luigi895@", "lb356") 
-extract(conn, json_file_path)

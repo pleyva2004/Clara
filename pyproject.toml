@@ -5,7 +5,7 @@ description = "Clara is an AI-powered email management assistant that helps stud
 authors = ["Pablo Leyva <pleyva2004@gmail.com>"]
 packages = [
     { include = "llm_engineering" },
-    { include = "data-pipeline}
+    { include = "data-pipeline"}
 ]
 
 [tool.poetry.dependencies]

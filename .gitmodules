@@ -1,0 +1,3 @@
+[submodule "whatsapp_parser"]
+	path = whatsapp_parser
+	url = https://github.com/lharries/whatsapp-mcp.git

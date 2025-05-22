@@ -21,6 +21,8 @@ talon = "^1.4.4"
 joblib = "^1.4.2"
 openai = "^1.76.0"
 tenacity = "^9.1.2"
+requests = "^2.32.3"
+telethon = "^1.40.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"

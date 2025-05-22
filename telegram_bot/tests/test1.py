@@ -1,4 +1,4 @@
-from telegram_bot.create_chat import create_group
+from create_chat import create_group
 
 if __name__ == "__main__":
     app_id = 24829326

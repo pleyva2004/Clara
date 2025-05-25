@@ -25,11 +25,11 @@ if __name__ == "__main__":
     client = connect_telegram(session_name, app_id, api_hash)
 
     print("Checking group...")
-    group = isGroup(client, group_name) # Returns Dialog object
+    group = isGroup(client, group_name)
     
     if not group:
         print("Creating group...")
-        group = create_group(client, group_name, intial_users) # Returns Dialog object
+        group = create_group(client, group_name, intial_users)
 
     print("adding more users...")
     add_users_to_group(client, group, more_users)

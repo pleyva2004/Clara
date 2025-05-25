@@ -1,40 +1,34 @@
-from telethon.tl.functions.messages import CreateChatRequest
+from telethon.sync import TelegramClient
+from telethon.tl.functions.channels import CreateChannelRequest, InviteToChannelRequest
+from telethon.tl.types import Channel
+from typing import List, Optional
 
-'''
-This function greates a group chat
-Parameters:
-client: The return value from connect_telegram function (The connection)
-group_name: str
-    The name of the group to which users will be added.
-usernames: list
-    A list of usernames to be added to the group. Usernames should be in the format '@username'.
-Returns:
-    None or Dialog:
-        Returns the Dialog object
-'''
-def create_group(client, group_name, usernames):
-    # Get the users
-    users = []
-    for username in usernames:
-        try:
-            user = client.get_input_entity(username)
-            users.append(user)
-        except Exception as e:
-            print(f"User Error: {e}") # If username not found ect.
+def create_group(client: TelegramClient, group_name: str, usernames: List[str]) -> Optional[Channel]:
 
-    if not users: # If no users are found
-        print("No valid users found.")
-        return None
     try:
-        result = client(CreateChatRequest(
-            users=users,
-            title=group_name
+        result = client(CreateChannelRequest(
+            title=group_name,
+            about="Group created by bot",
+            megagroup=True  #makes it a supergroup
         ))
+        group = result.chats[0]  # This is the new supergroup
 
-        # Find and return the new group dialog
-        for dialog in client.iter_dialogs():
-            if dialog.name == group_name:
-                return dialog
+        print(f"Supergroup '{group.title}' created.")
+
+        # Get the users
+        if usernames:
+            users = []
+            for username in usernames:
+                try:
+                    user = client.get_input_entity(username)
+                    users.append(user)
+                except Exception as e:
+                    print(f"User Error: {e}") # If username not found ect.
+
+            if users:
+                client(InviteToChannelRequest(channel=group, users=users))
+                print(f"Invited {len(users)} users.")
+            return group
     except Exception as e:
         print(f"Chat Creation Error: {e}")
         return None

@@ -1,6 +1,5 @@
 from telethon.tl.functions.messages import CreateChatRequest
 
-
 '''
 This function greates a group chat
 Parameters:
@@ -10,15 +9,10 @@ group_name: str
 usernames: list
     A list of usernames to be added to the group. Usernames should be in the format '@username'.
 Returns:
-    result.chat[0]:
-        Returns the group chat object
+    None or Dialog:
+        Returns the Dialog object
 '''
 def create_group(client, group_name, usernames):
-    for dialog in client.iter_dialogs(): # Iterate through all dialogs (groups, channels, etc.) of the user
-        if dialog.name == group_name: # Check if the dialog name matches the group name
-            print("Group already exists.")
-            return dialog
-    
     # Get the users
     users = []
     for username in usernames:
@@ -26,21 +20,21 @@ def create_group(client, group_name, usernames):
             user = client.get_input_entity(username)
             users.append(user)
         except Exception as e:
-            print(f"Error: {e}") # If username not found ect.
+            print(f"User Error: {e}") # If username not found ect.
 
     if not users: # If no users are found
         print("No valid users found.")
         return None
-    
-    result = client(CreateChatRequest(
-        users=users,
-        title=group_name
-    ))
-    
-    # Find and return the new group dialog
-    for dialog in client.iter_dialogs():
-        if dialog.name == group_name:
-            return dialog
+    try:
+        result = client(CreateChatRequest(
+            users=users,
+            title=group_name
+        ))
 
-    print("Group created but not found in dialogs.")
-    return None 
+        # Find and return the new group dialog
+        for dialog in client.iter_dialogs():
+            if dialog.name == group_name:
+                return dialog
+    except Exception as e:
+        print(f"Chat Creation Error: {e}")
+        return None

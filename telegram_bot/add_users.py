@@ -13,7 +13,7 @@ usernames: list
 Returns:
     None
 '''
-def add_users_to_group(client, group, usernames):
+def add_users_to_group(client, group_name, usernames):
     if not usernames:
         print("No usernames provided to add.")
         return
@@ -23,11 +23,11 @@ def add_users_to_group(client, group, usernames):
         try:
             user = client.get_entity(username) 
             client(AddChatUserRequest(
-                chat_id=group.id,
+                chat_id=group_name.id,
                 user_id=user,
                 fwd_limit=0
             ))
-            print(f"Added {username} to '{group.title}'")
+            print(f"Added {username} to '{group_name.title}'")
         except UserPrivacyRestrictedError:
             print(f"{username} has privacy settings preventing adding.")
         except UserNotMutualContactError:

@@ -25,10 +25,15 @@ def create_group(client: TelegramClient, group_name: str, usernames: List[str]) 
                 except Exception as e:
                     print(f"User Error: {e}") # If username not found ect.
 
-            if users:
+            if not users:
+                return None
+            else:
                 client(InviteToChannelRequest(channel=group, users=users))
                 print(f"Invited {len(users)} users.")
-            return group
+                return group
+        else:
+            print("No usernames found")
+            return None
     except Exception as e:
         print(f"Chat Creation Error: {e}")
         return None

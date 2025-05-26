@@ -104,4 +104,3 @@ def test_create_group_with_blank_and_invalid_usernames():
     result = create_group(client, "Test Group", ["@", " "])
     assert result.title == "Test Group"
     assert client.get_input_entity.call_count == 2
-

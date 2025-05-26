@@ -16,11 +16,11 @@ def add_users_to_group(client: TelegramClient, group: Channel, usernames: List[s
                 channel=group,
                 users=[user]  # Important: send as list
             ))
-            print(f"Added {username} to group: {group.title}")
+            print(f"Added {username} to group: '{group.title}'")
         except UserPrivacyRestrictedError:
-            print(f"One or more users have privacy settings preventing invites.")
+            print(f"{username}: Cannot be added due to privacy settings.")
         except UserNotMutualContactError:
-            print(f"One or more users must be mutual contacts.")
+            print(f"{username}: Cannot be added because they are not a mutual contact.")
         except Exception as e:
-            print(f"Failed to add users: {e}")
+            print(f"{username}: Failed to add due to error: {e}")
             

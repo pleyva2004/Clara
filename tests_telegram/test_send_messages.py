@@ -7,7 +7,7 @@ def test_send_bot_message_success():
         mock_response.status_code = 200
         mock_response.text = "ok"
         mock_post.return_value = mock_response
-
+    
         send_bot_message("dummy-token", 123, "hello")
 
         mock_post.assert_called_once_with(

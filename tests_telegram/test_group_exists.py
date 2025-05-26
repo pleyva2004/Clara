@@ -1,5 +1,4 @@
 from telegram_bot.group_exists import isGroup
-from telethon.sync import TelegramClient
 from unittest.mock import MagicMock
 from telethon.tl.custom.dialog import Dialog
 import pytest

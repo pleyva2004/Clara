@@ -15,7 +15,7 @@ if __name__ == "__main__":
     api_hash = os.getenv("TELEGRAM_API_HASH")
     session_name = 'session_name'
     group_name = 'Clara Test'
-    intial_users = ['@liorbiton']
+    intial_users = []
     bot = ['@ClaraAssistant_bot']
     more_users = ['@ClaraAssistant_bot', '@pabloleyvasegundo']
     message = "hola familia"

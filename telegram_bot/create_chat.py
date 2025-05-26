@@ -15,25 +15,27 @@ def create_group(client: TelegramClient, group_name: str, usernames: List[str]) 
 
         print(f"Supergroup '{group.title}' created.")
 
+        if not usernames:
+            print("No usernames provided to invite.")
+            return group # Still return the group if creation was successful
+        
         # Get the users
-        if usernames:
-            users = []
-            for username in usernames:
-                try:
-                    user = client.get_input_entity(username)
-                    users.append(user)
-                except Exception as e:
-                    print(f"User Error: {e}") # If username not found ect.
+        users = []
+        for username in usernames:
+            try:
+                user = client.get_input_entity(username)
+                users.append(user)
+            except Exception as e:
+                print(f"User Error for '{username}': {e}") # If username not found ect.
 
-            if not users:
-                return None
-            else:
-                client(InviteToChannelRequest(channel=group, users=users))
-                print(f"Invited {len(users)} users.")
-                return group
+        if users:
+            client(InviteToChannelRequest(channel=group, users=users))
+            print(f"Invited {len(users)} users.")
         else:
-            print("No usernames found")
-            return None
+            print("No valid useres to invite")
+        
+        return group
+    
     except Exception as e:
         print(f"Chat Creation Error: {e}")
         return None

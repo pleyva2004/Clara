@@ -1,9 +1,9 @@
-from create_connection import connect_telegram
-from group_exists import isGroup
-from create_chat import create_group
-from add_users import add_users_to_group
-from bot_permissions import bot_get_admin
-from send_messages import send_bot_message
+from telegram_bot.create_connection import connect_telegram
+from telegram_bot.group_exists import isGroup
+from telegram_bot.create_chat import create_group
+from telegram_bot.add_users import add_users_to_group
+from telegram_bot.bot_permissions import bot_get_admin
+from telegram_bot.send_messages import send_bot_message
 from dotenv import load_dotenv
 import os
 

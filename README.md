@@ -44,7 +44,7 @@ Invites a list of users to an existing supergroup.
 
 **Returns: None.**
 
-## `bot_get_admin(client: TelegramClient, group: Channel, bot: List[str]) -> None:`
+## `bot_get_admin(client: TelegramClient, group: Channel, bot_usernames: List[str]) -> None:`
 Gives a Telegram bot admin role in a supergroup with specific permissions.
 
 **Parameters:**

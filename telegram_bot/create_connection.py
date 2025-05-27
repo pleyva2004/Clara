@@ -9,4 +9,3 @@ def connect_telegram(session: str, id: int, hash: str) -> Optional[TelegramClien
     except Exception as e:
         print(f"Client failed to connect {e}")
         return None
-

@@ -54,4 +54,3 @@ def test_send_bot_message(mock_post, message, status_code, response_text, should
         )
     else:
         mock_post.assert_not_called()
-

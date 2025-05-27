@@ -2,10 +2,8 @@ from unittest.mock import MagicMock
 from telethon.tl.types import Channel, User
 from telethon.tl.functions.channels import CreateChannelRequest, InviteToChannelRequest
 from telegram_bot.create_chat import create_group
+import pytest
 
-
-
-# Helper to create a mocked TelegramClient
 def make_mock_client(raise_on_create=False, user_map=None):
     mock_client = MagicMock()
 
@@ -37,70 +35,47 @@ def make_mock_client(raise_on_create=False, user_map=None):
 
     return mock_client
 
+@pytest.mark.parametrize("usernames, user_map, expected_calls_count", [
+    # Test with a valid user
+    (["@user1"], {"@user1": MagicMock(spec=User)}, 1),
 
-def test_create_group_with_valid_users():
+    # Test with multiple valid users
+    (["@user1", "@user2"], {"@user1": MagicMock(spec=User), "@user2": MagicMock(spec=User)}, 2),
+    
+    # Test with a invalid user
+    (["@invalidUser1"], {}, 1),
+
+    #Test with multiple invalid users
+    (["@invalidUser1", "@invalidUser2"], {}, 2),
+
+    # Test with a valid and invlaid user
+    (["@user1", "@invalidUser1"], {"@user1": MagicMock(spec=User)}, 2),
+    (["@invalidUser1", "@user1"], {"@user1": MagicMock(spec=User)}, 2),
+
+    # Test with no usernames
+    ([], {}, 0),
+
+    # Test with a invalid username format
+    (["@", " "], {}, 2),
+])
+
+def test_create_group(usernames, user_map, expected_calls_count):
     # Arrange
-    mock_users = {
-        "@user1": MagicMock(spec=User),
-        "@user2": MagicMock(spec=User)
-    }
-    client = make_mock_client(user_map=mock_users)
+    client = make_mock_client(user_map=user_map)
 
     # Act
-    result = create_group(client, "Test Group", ["@user1", "@user2"])
+    result = create_group(client, "Test Group", usernames)
 
     # Assert
     assert result.title == "Test Group"
-    assert client.get_input_entity.call_count == 2
-
-def test_create_group_with_all_invalid_users():
-    # Arrange
-    client = make_mock_client(user_map={})
-
-    # Act
-    result = create_group(client, "Test Group", ["@invalid"])
-
-    # Assert
-    assert result.title == "Test Group"
-    assert client.get_input_entity.call_count == 1
-
-def test_create_group_with_some_invalid_users():
-    # Arrange
-    mock_users = {
-        "@user1": MagicMock(spec=User)
-    }
-    client = make_mock_client(user_map=mock_users)
-
-    # Act
-    result = create_group(client, "Test Group", ["@user1", "@invalid"])
-
-    # Assert
-    assert result.title == "Test Group"
-    assert client.get_input_entity.call_count == 2
-
-def test_create_group_with_no_users():
-    # Arrange
-    client = make_mock_client()
-
-    # Act
-    result = create_group(client, "Test Group", [])
-
-    # Assert
-    assert result.title == "Test Group"
-    assert client.get_input_entity.call_count == 0
+    assert client.get_input_entity.call_count == expected_calls_count
 
 def test_create_group_failure():
     # Arrange
     client = make_mock_client(raise_on_create=True)
-
+    
     # Act
     result = create_group(client, "Test Group", ["@user1"])
-
+    
     # Assert
     assert result is None
-
-def test_create_group_with_blank_and_invalid_usernames():
-    client = make_mock_client()
-    result = create_group(client, "Test Group", ["@", " "])
-    assert result.title == "Test Group"
-    assert client.get_input_entity.call_count == 2

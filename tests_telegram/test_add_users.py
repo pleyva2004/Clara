@@ -22,7 +22,7 @@ def mock_group():
     group.title = "Test Group"
     return group
 
-@pytest.mark.parametrize("usernames, user_behavior, expected_output",[
+@pytest.mark.parametrize("usernames, user_behavior, expected_output", [
     # Test with no usernames
     ([], {}, ["No usernames provided to add."]),
 

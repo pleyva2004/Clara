@@ -61,7 +61,6 @@ def getEmail(email_address: str, password: str, imap_server: str = "imap.gmail.c
             # Line index for Iterate through the array in forward order
             for line in range(j):
                 line = array[line]
-                print(line[:-1])
                 body += line[:-1] + " "
 
             dict = {

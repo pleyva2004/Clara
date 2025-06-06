@@ -1,5 +1,5 @@
-from telegram.ext import Application, CommandHandler, MessageHandler, filters
-from telegram_bot.reply import message_handler
+from telegram.ext import Application,MessageHandler, filters
+from telegram_bot_functions.reply import message_handler
 from dotenv import load_dotenv
 import os
 

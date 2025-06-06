@@ -58,3 +58,4 @@ def extract(conn, file_path):
             conn.close()
             print("Database connection closed")
 
+

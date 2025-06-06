@@ -61,7 +61,7 @@ def main():
         with open("./assets/temp.json", "w") as f:
             json.dump(final_json, f, indent=4)
 
-        # Call the DATA BASE FUNCTIONs HERE
+        # # Call the DATA BASE FUNCTIONs HERE
         json_file_path = "./assets/temp.json" # Must give a path the the 
         conn = get_connection("sql1.njit.edu", "lb356", "123Luigi895@", "lb356") 
         extract(conn, json_file_path)

@@ -23,7 +23,7 @@ def run_telegram_bot():
 
     # App handler
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))
-
+    # Vote_message_handler using /vote
     print("Bot is running...")
     app.run_polling()
 

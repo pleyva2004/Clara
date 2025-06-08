@@ -1,5 +1,49 @@
 from datetime import datetime
 
+
+# When Clara sends first message
+def create_conversation_thread(conn, conversation_id, chat_id, source_email_id):
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO conversation_threads (conversation_id, chat_id, source_email_id, status)
+        VALUES (%s, %s, %s, 'open')
+    """, (conversation_id, chat_id, source_email_id))
+
+    conn.commit()
+    print(f"[DB] Created new conversation thread: {conversation_id} (open)")
+
+
+def close_conversation_thread(conn, conversation_id):
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE conversation_threads
+        SET status = 'closed'
+        WHERE conversation_id = %s
+    """, (conversation_id,))
+
+    conn.commit()
+
+    print(f"[DB] Closed conversation thread: {conversation_id}")
+
+
+def get_conversation_status(conn, conversation_id):
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT status
+        FROM conversation_threads
+        WHERE conversation_id = %s
+    """, (conversation_id,))
+
+    result = cursor.fetchone()
+
+    if result:
+        return result[0]  # 'open' or 'closed'
+    else:
+        return None  # No such conversation found
+
+
 def save_message_to_conversation(conn, conversation_id, chat_id, user_id, sender_role, message_text, telegram_message_id, source_email_id, timestamp):
     cursor = conn.cursor()
 

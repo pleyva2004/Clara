@@ -1,4 +1,4 @@
-def email_classifier_prompt(sender: str, subject: str, body_snippet: str) -> str:
+def emailClassifierPrompt(sender: str, subject: str, body_snippet: str) -> str:
     prompt = f"""
     Classify the following email and return a JSON object with the following structure:
     {{
@@ -49,13 +49,14 @@ def createMessagePrompt(email_summary: str) -> str:
     {email_summary}
 
     Always start with "Hola Familia!". Make the message concise and to the point. Always include the Call to Action points bys saying "They are asking for..." folowed by a bulleted list of the Call to Action points.
+    
     Finally, finish off by saying "How would you like me to respond?"
 
     """
     return prompt
 
 
-def validateMessagePrompt(message: str, email_summary: str, email: list) -> str:
+def validateMessagePrompt(message: str, email_summary: str, email: str) -> str:
     prompt = f"""
     MESSAGE TO VALIDATE:
     {message}
@@ -107,3 +108,41 @@ def validateMessagePrompt(message: str, email_summary: str, email: list) -> str:
     """
     return prompt
 
+
+def validateResponsePrompt(response: str, email_summary: str) -> str:
+    prompt = f"""
+    RESPONSE TO VALIDATE:
+    {response}
+
+    SOURCE INFORMATION:
+    1. Email Summary:
+    {email_summary}
+    
+    Validation Requirements:
+
+    1. Accuracy Score (0-100):
+       - Score 100: Response addresses ALL action items from the message completely
+       - Score 70-99: Response addresses most action items but may be missing minor details
+       - Score 40-69: Response addresses some action items but is missing significant ones
+       - Score 0-39: Response fails to address most or all action items
+
+    2. Missing Information Check:
+       - Extract ALL action items from the email summary (usually listed after "Call to Action:")
+       - Check if EACH action item is addressed in the response
+       - List any action items that are NOT addressed in the response
+
+    3. Correction Guidelines:
+       - Provide specific suggestions for addressing any missing action items
+       - Focus on completeness of response to action items
+
+    IMPORTANT: Respond ONLY with a JSON object in the following format:
+    
+        "accuracy_score": <number between 0-100>,
+        "action_items_in_message": [<list of action items extracted from the message>],
+        "action_items_addressed": [<list of action items that were addressed in the response>],
+        "missing_information": [<list of action items NOT addressed in the response>],
+        "suggested_corrections": [<list of specific suggestions to address missing items>]
+
+    The accuracy_score field is required. Other fields should be included to show the analysis.
+    """
+    return prompt

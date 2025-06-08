@@ -1,4 +1,4 @@
-from ..model.operations import readEmailLLM, createMessageLLM, validateMessageLLM, classifyEmail
+from ..model import readEmailLLM, createMessageLLM, validateMessageLLM, classifyEmailLLM, validateResponseLLM
 
 
 
@@ -9,7 +9,7 @@ class Clara:
 
     def classifyEmail(self, sender: str, subject: str, body_snippet: str):
         print("Classifying email...")
-        response = classifyEmail(sender, subject, body_snippet)
+        response = classifyEmailLLM(sender, subject, body_snippet)
         return response
     
     def readEmail(self, input_email: str):
@@ -18,13 +18,18 @@ class Clara:
         return response
 
     def createMessage(self, input_email_summary: str):
-        print("Creating message for Whatsapp...")
+        print("Creating message for Telegram...")
         response = createMessageLLM(input_email_summary)
         return response
     
     def validateMessage(self, input_message: str, input_email_summary: str, input_email: str):
         print("Validating message...")
         response = validateMessageLLM(input_message, input_email_summary, input_email)
+        return response
+    
+    def validateResponse(self, input_response: str, input_message: str):
+        print("Validating response...")
+        response = validateResponseLLM(input_response, input_message)
         return response
 
     def createEmail(self):

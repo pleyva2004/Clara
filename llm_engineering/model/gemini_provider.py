@@ -4,7 +4,7 @@ from typing import Optional, List
 
 from dotenv import load_dotenv
 from google import genai
-from google.genai.types import GenerateContentConfig
+from google.genai.types import GenerateContentConfig, Tool, FunctionDeclaration
 
 
 
@@ -31,7 +31,15 @@ class GeminiClient:
         )
         
         if tools:
-            config.tools = tools
+            # Convert dict to Tool objects
+            tool_objects = []
+            for tool_dict in tools:
+                if "function_declarations" in tool_dict:
+                    func_decls = []
+                    for func_decl in tool_dict["function_declarations"]:
+                        func_decls.append(FunctionDeclaration(**func_decl))
+                    tool_objects.append(Tool(function_declarations=func_decls))
+            config.tools = tool_objects
             
         if system_instruction:
             config.system_instruction = system_instruction
@@ -41,7 +49,7 @@ class GeminiClient:
             contents=prompt,
             config=config
         )
-        return response.text
+        return response.text if response.text else ""
     
     def close(self):
         """

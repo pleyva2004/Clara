@@ -1,6 +1,6 @@
 from .gemini_provider import GeminiClient
 from google.genai.types import Tool, FunctionDeclaration
-from ..infrastructure import readEmailPrompt, createMessagePrompt, validateMessagePrompt, emailClassifierPrompt, validateResponsePrompt
+from ..infrastructure.prompts import readEmailPrompt, createMessagePrompt, validateMessagePrompt, emailClassifierPrompt, validateResponsePrompt, editMessagePrompt, requestMissingInformationPrompt
 
 
 def classifyEmailLLM(sender: str, subject: str, body_snippet: str) -> str:
@@ -49,9 +49,15 @@ def classifyEmailLLM(sender: str, subject: str, body_snippet: str) -> str:
 def readEmailLLM(email: str) -> str:
     client = GeminiClient()
     prompt = readEmailPrompt(email)
-    # system_instruction = "You are a helpful email reader. Be simple and concise."
+    system_instruction = "You are a precise email reader. You carefully process the email and you never miss information. Your task is to extract ALL information from the email, including dates, names, action items, and any other relevant details. Be thorough and complete in your extraction."
     try:
-        response = client.generate_text(prompt)
+        response = client.generate_text(
+            prompt, 
+            system_instruction,
+            temperature=0.1,  # Lower temperature for more precise extraction
+            top_p=0.3,
+            top_k=10
+        )
         return response
     except Exception as e:
         print(f"Error reading email: {e}")
@@ -60,7 +66,7 @@ def readEmailLLM(email: str) -> str:
 def createMessageLLM(email_summary: str) -> str:
     client = GeminiClient()
     prompt = createMessagePrompt(email_summary)
-    system_instruction = "You are a secretary that creates messages for Whatsapp groups.  "
+    system_instruction = "You are CLARA. You are having a conversation with a member of the organizaiton. You are the secretary of the organization. Your task is to create a message for the group."
     try:
         response = client.generate_text(prompt, system_instruction, temperature=0.3)
         return response
@@ -71,7 +77,7 @@ def createMessageLLM(email_summary: str) -> str:
 def validateMessageLLM(message: str, email_summary: str, email: str) -> str:
     client = GeminiClient()
     prompt = validateMessagePrompt(message, email_summary, email)
-    system_instruction = "You are a precise fact-checker. Your task is to validate the accuracy of a WhatsApp message against its source email and summary."
+    # system_instruction = "You are a precise fact-checker. Your task is to validate the accuracy of a WhatsApp message against its source email and summary."
     
     # Define the function declaration with correct type values
     validate_message_declaration = {
@@ -115,7 +121,7 @@ def validateMessageLLM(message: str, email_summary: str, email: str) -> str:
     try:
         response = client.generate_text(
             prompt,
-            system_instruction,
+            # system_instruction,
             temperature=0.1,
             top_p=0.3,
             top_k=10,
@@ -126,6 +132,17 @@ def validateMessageLLM(message: str, email_summary: str, email: str) -> str:
         print(f"Error validating message: {e}")
         return "Clara was unable to validate the message. Please try again."
 
+def editMessageLLM(message: str, edits: str, context: str) -> str:
+    client = GeminiClient()
+    prompt = editMessagePrompt(message, edits, context)
+    system_instruction = "You are a precise message editor. You work with extreme diligence and your biggest strength is your attention to detail. Your task is to edit a message to make the necessary changes. Return ONLY the new edited message and nothing else. Do not include any other text or comments. Ensure that every edit is made to create a new message."
+    try:
+        response = client.generate_text(prompt, system_instruction, temperature=0.3)
+        return response
+    except Exception as e:
+        print(f"Error editing message: {e}")
+        return "Clara was unable to edit the message. Please try again."
+    
 def validateResponseLLM(response: str, message: str) -> str:
     client = GeminiClient()
     prompt = validateResponsePrompt(response, message)
@@ -184,3 +201,17 @@ def validateResponseLLM(response: str, message: str) -> str:
     except Exception as e:
         print(f"Error validating message response: {e}")
         return "Clara was unable to validate the message response. Please try again."
+
+def requestMissingInformationLLM(response: str, action_items_in_message: str, action_items_addressed: str, missing_information: str, suggested_corrections: str) -> str:
+    client = GeminiClient()
+    prompt = requestMissingInformationPrompt(response, action_items_in_message, action_items_addressed, missing_information, suggested_corrections)
+    system_instruction = "You are CLARA. You are having a conversation with a member of the organizaiton. He has responses to your initial message. Your task is to request the missing information from the user. Return ONLY the new edited response and nothing else. Do not include any other text or comments."
+    try:
+        response = client.generate_text(
+            prompt, 
+            temperature=0.3,
+        )
+        return response
+    except Exception as e:
+        print(f"Error editing response: {e}")
+        return "Clara was unable to response. Please try again."

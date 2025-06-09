@@ -35,6 +35,7 @@ def readEmailPrompt(email: str) -> str:
         *   Company/Affiliation/Organization: 
 
 
+    If the email contains dates, make sure to include the date in the Purpose of Email section.
     **Purpose of Email**:
 
 
@@ -108,8 +109,23 @@ def validateMessagePrompt(message: str, email_summary: str, email: str) -> str:
     """
     return prompt
 
+def editMessagePrompt(message: str, edits: str, context: str) -> str:
+    prompt = f"""
+    MESSAGE TO EDIT:
+    {message}
+
+    EDITS TO MAKE:
+    {edits}
+
+    CONTEXT:
+    {context}
+
+    Edit the message to make the necessary changes. Make sure to keep the original message structure and format. Include all the edits. Return ONLY the new edited message and nothing else.
+    """
+    return prompt
 
 def validateResponsePrompt(response: str, email_summary: str) -> str:
+
     prompt = f"""
     RESPONSE TO VALIDATE:
     {response}
@@ -144,5 +160,48 @@ def validateResponsePrompt(response: str, email_summary: str) -> str:
         "suggested_corrections": [<list of specific suggestions to address missing items>]
 
     The accuracy_score field is required. Other fields should be included to show the analysis.
+    """
+    return prompt
+
+def requestMissingInformationPrompt(response: str, action_items_in_message: str, action_items_addressed: str, missing_information: str, suggested_corrections: str) -> str:
+    prompt = f"""
+    RESPONSE GIVEN BY USER:
+    {response}
+
+    ACTION ITEMS IN MESSAGE:
+    {action_items_in_message}
+
+    ACTION ITEMS ADDRESSED:
+    {action_items_addressed}
+
+    MISSING INFORMATION:
+    {missing_information}
+
+    SUGGESTED CORRECTIONS:
+    {suggested_corrections}
+
+
+    
+    INSTRUCTIONS:
+
+    Your task is to edit the response to address all missing action items. Follow these steps:
+
+    1. Review the original response and identify what was addressed correctly
+    2. For each missing action item:
+       - Add a polite request for the specific missing information
+       - Use the suggested corrections as guidance
+    3. Structure the response to:
+       - Acknowledge the information already provided
+       - Clearly state what additional information is needed
+       - Make it easy for the recipient to provide the missing details
+
+    Create a new response that:
+    - Acknowledges the helpful parts of the original response
+    - Adds clear requests for missing information
+    - Follows a logical flow
+    - Makes it easy for the recipient to understand what additional information is needed
+
+    Return ONLY the edited response with no additional commentary or meta-text.
+
     """
     return prompt

@@ -1,4 +1,4 @@
-from ..model import readEmailLLM, createMessageLLM, validateMessageLLM, classifyEmailLLM, validateResponseLLM
+from ..model import readEmailLLM, createMessageLLM, validateMessageLLM, classifyEmailLLM, validateResponseLLM, editMessageLLM, requestMissingInformationLLM
 
 
 
@@ -27,11 +27,21 @@ class Clara:
         response = validateMessageLLM(input_message, input_email_summary, input_email)
         return response
     
+    def editMessage(self, input_message: str, input_edits: str, input_context: str):
+        print("Editing message...")
+        response = editMessageLLM(input_message, input_edits, input_context)
+        return response
+
     def validateResponse(self, input_response: str, input_message: str):
         print("Validating response...")
         response = validateResponseLLM(input_response, input_message)
         return response
-
+    
+    def requestMissingInformation(self, input_response: str, input_action_items_in_message: str, input_action_items_addressed: str, input_missing_information: str, input_suggested_corrections: str):
+        print("Requesting missing information...")
+        response = requestMissingInformationLLM(input_response, input_action_items_in_message, input_action_items_addressed, input_missing_information, input_suggested_corrections)
+        return response
+    
     def createEmail(self):
         print("Creating email...")
     

@@ -109,7 +109,7 @@ def get_conversation_id_by_telegram_message_id(conn, chat_id, telegram_message_i
         # Querey the conversation_message table
         cursor.execute("""
                 SELECT conversation_id
-                FROM conversation_messages
+                FROM conversation_threads
                 WHERE chat_id = %s
                     AND telegram_message_id = %s
                 LIMIT 1 

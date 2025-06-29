@@ -19,26 +19,47 @@ def create_conversation_thread(thread_id, chat_id, bot_message, message_id, sour
     
     cursor = conn.cursor()
     try:
-        # Create table if it doesn't exist
+        # Create conversation_threads table for thread metadata
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS conversation_threads (
                 id INT AUTO_INCREMENT PRIMARY KEY,
-                thread_id VARCHAR(255),
+                thread_id VARCHAR(255) UNIQUE NOT NULL,
+                chat_id BIGINT NOT NULL,
+                source_email_id VARCHAR(255),
+                status ENUM('open', 'closed') NOT NULL DEFAULT 'open',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
+        # Create conversation_messages table for all messages
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS conversation_messages (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                thread_id VARCHAR(255) NOT NULL,
                 chat_id BIGINT NOT NULL,
                 user_id BIGINT,
                 sender_role ENUM('user', 'bot') NOT NULL,
                 message_text TEXT NOT NULL,
                 timestamp DATETIME NOT NULL,
                 telegram_message_id BIGINT NOT NULL,
-                source_email_id VARCHAR(255),
-                status ENUM('open', 'closed') NOT NULL DEFAULT 'open'
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_thread_id (thread_id),
+                INDEX idx_telegram_message_id (telegram_message_id),
+                FOREIGN KEY (thread_id) REFERENCES conversation_threads(thread_id) ON DELETE CASCADE
             )
         """)
         
+        # Insert thread metadata
         cursor.execute("""
-            INSERT INTO conversation_threads (thread_id, chat_id, user_id, sender_role, message_text, timestamp, telegram_message_id, source_email_id)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-        """, (thread_id, chat_id, None, 'bot', bot_message, datetime.now(), message_id, source_email_id))
+            INSERT INTO conversation_threads (thread_id, chat_id, source_email_id, status)
+            VALUES (%s, %s, %s, 'open')
+        """, (thread_id, chat_id, source_email_id))
+        
+        # Insert the initial bot message
+        cursor.execute("""
+            INSERT INTO conversation_messages (thread_id, chat_id, user_id, sender_role, message_text, timestamp, telegram_message_id)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """, (thread_id, chat_id, None, 'bot', bot_message, datetime.now(), message_id))
 
         conn.commit()
         print(f"[DB] Created new conversation thread: {thread_id} (open)")
@@ -125,27 +146,25 @@ def save_message_to_conversation(thread_id, chat_id, user_id, sender_role, messa
         else:
             timestamp_str = str(timestamp)
         
-        # Insert row into Table
+        # Insert row into conversation_messages table
         cursor.execute("""
-            INSERT INTO conversation_threads (
+            INSERT INTO conversation_messages (
                 thread_id,
                 chat_id,
                 user_id,
                 sender_role,
                 message_text,
                 timestamp,
-                telegram_message_id,
-                source_email_id   
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                telegram_message_id
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s)
         """, (
             thread_id,
             chat_id,
             user_id,
             sender_role,
             message_text,
-            timestamp,
-            telegram_message_id,
-            source_email_id
+            timestamp_str,
+            telegram_message_id
         ))
 
         # Commit to DB
@@ -170,10 +189,10 @@ def get_thread_id_by_telegram_message_id(chat_id, telegram_message_id):
     
     cursor = conn.cursor()
     try:
-        # Querey the conversation_threads table
+        # Query the conversation_messages table
         cursor.execute("""
                 SELECT thread_id
-                FROM conversation_threads
+                FROM conversation_messages
                 WHERE chat_id = %s
                     AND telegram_message_id = %s
                 LIMIT 1 
@@ -209,7 +228,7 @@ def get_conversation_history(thread_id, limit=10):
     try:
         cursor.execute("""
                 SELECT sender_role, message_text, timestamp
-                FROM conversation_threads
+                FROM conversation_messages
                 WHERE thread_id = %s
                 ORDER BY timestamp ASC
                 LIMIT %s

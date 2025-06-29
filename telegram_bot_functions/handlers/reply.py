@@ -52,14 +52,15 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
                 print(f"[HANDLER] Validate user response JSON: {json.dumps(validate_user_response_json, indent=4)}")
                 
-                action_items_in_message = ", ".join(validate_user_response_json["action_items_in_message"])
-                action_items_addressed = ", ".join(validate_user_response_json["action_items_addressed"])
-                missing_information_for_response = ", ".join(validate_user_response_json["missing_information"])
-                suggested_corrections_for_response = ", ".join(validate_user_response_json["suggested_corrections"])
-                response_score = validate_user_response_json["accuracy_score"]
-
+                # Safely handle potentially empty arrays
+                action_items_in_message = ", ".join(validate_user_response_json.get("action_items_in_message", []))
+                action_items_addressed = ", ".join(validate_user_response_json.get("action_items_addressed", []))
+                missing_information_for_response = ", ".join(validate_user_response_json.get("missing_information", []))
+                suggested_corrections_for_response = ", ".join(validate_user_response_json.get("suggested_corrections", []))
+                response_score = validate_user_response_json.get("accuracy_score", 0)
 
                 print(f"[HANDLER] Clara validation score: {response_score}")
+                print(f"[HANDLER] Missing information count: {len(validate_user_response_json.get('missing_information', []))}")
 
                 # Save the users reply
                 save_message_to_conversation(
@@ -69,7 +70,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
                     sender_role="user",
                     message_text=reply_text,
                     telegram_message_id=update.message.message_id,
-                    source_email_id=None,  # Already linked in initial message
+                    source_email_id=None,  # Not used in new architecture but function still expects it
                     timestamp=update.message.date
                 )
 
@@ -101,8 +102,8 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
                 user_id=0,  # Bot
                 sender_role="bot",
                 message_text=llm_response,
-                telegram_message_id=bot_reply.message_id,  # Will get assigned after sending the message
-                source_email_id=None,
+                telegram_message_id=bot_reply.message_id,
+                source_email_id=None,  # Not used in new architecture but function still expects it
                 timestamp=datetime.now(timezone.utc)  # Use current UTC time
             )
         

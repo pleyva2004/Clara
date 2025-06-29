@@ -9,6 +9,7 @@ from telegram_bot_functions.db.conversation_utils import (
     close_conversation_thread
 )
 from datetime import datetime, timezone
+import json
 
 async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
@@ -37,34 +38,44 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
                 await update.message.reply_text("This conversation is already closed. Please start a new thread if needed.")
                 return
 
-            # Save the users reply
-            save_message_to_conversation(
-                conn=conn,
-                conversation_id=conversation_id,
-                chat_id=chat_id,
-                user_id=user_id,
-                sender_role="user",
-                message_text=reply_text,
-                telegram_message_id=update.message.message_id,
-                source_email_id=None,  # Already linked in initial message
-                timestamp=update.message.date
-            )
-
             # Load conversation history to LLM
             conversation_history = get_conversation_history(conn, conversation_id, limit=10)
 
             if conversation_history:
-                history_text = "\n".join([f"{entry['sender_role']}: {entry['message_text']}" for entry in conversation_history])
-                print(f"[HANDLER] Conversation history for LLM:\n{history_text}")
+                # Format the conversation history for LLM
+                json_conversation_history = json.dumps(conversation_history, indent=4)
+                print(f"[HANDLER] Conversation history for LLM:\n{json_conversation_history}")
 
                 # Call Clara
                 client = Clara()
 
-                validation_score = client.validateEmail()
-                print(f"[HANDLER] Clara validation score: {validation_score}")
+                validate_user_response = client.validateResponse(reply_text, json_conversation_history)
 
+                if  isinstance(validate_user_response, str):
+                    validate_user_response_json = json.loads(validate_user_response.replace('```json\n', '').replace('\n```', '').replace('```', '')) 
+                
+                action_items_in_message = validate_user_response_json["action_items_in_message"][0]
+                action_items_addressed = validate_user_response_json["action_items_addressed"][0]
+                missing_information_for_response = validate_user_response_json["missing_information"][0]
+                suggested_corrections_for_response = validate_user_response_json["suggested_corrections"][0]
+                response_score = validate_user_response_json["accuracy_score"]
 
-                if validation_score > 90: # If original message was fully answered
+                print(f"[HANDLER] Clara validation score: {response_score}")
+
+                # Save the users reply
+                save_message_to_conversation(
+                    conn=conn,
+                    conversation_id=conversation_id,
+                    chat_id=chat_id,
+                    user_id=user_id,
+                    sender_role="user",
+                    message_text=reply_text,
+                    telegram_message_id=update.message.message_id,
+                    source_email_id=None,  # Already linked in initial message
+                    timestamp=update.message.date
+                )
+
+                if response_score >= 90: # If original message was fully answered
                     print(f"Email was sent, thread closing")
 
                     # Close Thread
@@ -74,9 +85,10 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
                     llm_response = "This thread is now closed. Thank you!"
 
                     # Send Draft()
+                
                 else:
                     # Create a response to the user maybe what they are missing
-                    llm_response = client.create_response()
+                    llm_response = client.requestMissingInformation(reply_text, action_items_in_message, action_items_addressed, missing_information_for_response, suggested_corrections_for_response)
             else:
                 print(f"[WARN] No history found for conversation_id: {conversation_id}. Sending basic reply.")
                 llm_response = "Hello! I don't have enough context yet."
@@ -101,12 +113,3 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             # If no conversation_id is found, you may want to ignore or warn
             print(f"[WARN] No conversation_id found for reply to message_id {original_message_id}")
             await update.message.reply_text("Sorry, I could not link this reply to a known conversation. Please reply directly to a Clara message!")
-       
-
-#TODO 
-# If thread is closed and you reply
-            # if the user responded with send, then send email
-            # else
-                # Edit_Draft() & Resend Draft
-                # if current draft is sent 
-                    # That its and the threda is closed

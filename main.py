@@ -4,6 +4,7 @@ from telegram_bot.create_connection import connect_telegram
 from telegram_bot.send_messages import send_bot_message
 from telegram_bot.group_exists import isGroup
 from llm_engineering import Clara
+from telegram_bot_functions.db import create_conversation_thread
 
 from dotenv import load_dotenv
 import os
@@ -94,16 +95,22 @@ def main():
 
 
         print("Connecting to telegram...")
-        client = connect_telegram(session_name, app_id, api_hash)
+        telegram_client = connect_telegram(session_name, app_id, api_hash)
 
         print("Checking group...")
-        group = isGroup(client, group_name)
+        group = isGroup(telegram_client, group_name)
 
-        chat_id = client.get_entity(group_name) # Gets the basic group id
+        chat_id = telegram_client.get_entity(group_name) # Gets the basic group id
         chat_id = "-100" + str(chat_id.id) # Add -100 because super group requires it
-        
+
+        # Grab the thread id
+        thread_id = telegram_client.get_input_entity(group_name).channel_id
+        print(f"Thread ID: {thread_id}")
+
         # Send the message
         print("Sending Message...")
+        # Create conversation thread in DB
+        create_conversation_thread(conn, thread_id, chat_id, sender)
         send_bot_message(bot_token, chat_id, message)
         print(f"Message sent to {group!r}")
 

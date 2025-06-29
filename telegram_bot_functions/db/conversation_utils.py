@@ -3,16 +3,27 @@ import json
 
 
 # When Clara sends first message
-def create_conversation_thread(conn, conversation_id, chat_id, source_email_id):
+def create_conversation_thread(conn, thread_id, chat_id, source_email_id):
     cursor = conn.cursor()
     try:
+        # Create table if it doesn't exist
         cursor.execute("""
-            INSERT INTO conversation_threads (conversation_id, chat_id, source_email_id, status)
+            CREATE TABLE IF NOT EXISTS conversation_threads (
+                thread_id VARCHAR(255) PRIMARY KEY,
+                chat_id BIGINT NOT NULL,
+                source_email_id VARCHAR(255),
+                status VARCHAR(50) DEFAULT 'open',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
+        cursor.execute("""
+            INSERT INTO conversation_threads (thread_id, chat_id, source_email_id, status)
             VALUES (%s, %s, %s, 'open')
-        """, (conversation_id, chat_id, source_email_id))
+        """, (thread_id, chat_id, source_email_id))
 
         conn.commit()
-        print(f"[DB] Created new conversation thread: {conversation_id} (open)")
+        print(f"[DB] Created new conversation thread: {thread_id} (open)")
     except Exception as e:
         print(f"[DB ERROR] Failed to create conversation thread: {e}")
         conn.rollback()
@@ -20,17 +31,17 @@ def create_conversation_thread(conn, conversation_id, chat_id, source_email_id):
         cursor.close()
 
 
-def close_conversation_thread(conn, conversation_id):
+def close_conversation_thread(conn, thread_id):
     cursor = conn.cursor()
     try:
         cursor.execute("""
             UPDATE conversation_threads
             SET status = 'closed'
-            WHERE conversation_id = %s
-        """, (conversation_id,))
+            WHERE thread_id = %s
+        """, (thread_id,))
 
         conn.commit()
-        print(f"[DB] Closed conversation thread: {conversation_id}")
+        print(f"[DB] Closed conversation thread: {thread_id}")
     except Exception as e:
         print(f"[DB ERROR] Failed to close conversation thread: {e}")
         conn.rollback()
@@ -38,14 +49,14 @@ def close_conversation_thread(conn, conversation_id):
         cursor.close()
 
 
-def get_conversation_status(conn, conversation_id):
+def get_conversation_status(conn, thread_id):
     cursor = conn.cursor()
     try:
         cursor.execute("""
             SELECT status
             FROM conversation_threads
-            WHERE conversation_id = %s
-        """, (conversation_id,))
+            WHERE thread_id = %s
+        """, (thread_id,))
 
         result = cursor.fetchone()
         return result[0] if result else None
@@ -56,7 +67,7 @@ def get_conversation_status(conn, conversation_id):
         cursor.close()
 
 
-def save_message_to_conversation(conn, conversation_id, chat_id, user_id, sender_role, message_text, telegram_message_id, source_email_id, timestamp):
+def save_message_to_conversation(conn, thread_id, chat_id, user_id, sender_role, message_text, telegram_message_id, source_email_id, timestamp):
     cursor = conn.cursor()
     try:
 
@@ -71,8 +82,8 @@ def save_message_to_conversation(conn, conversation_id, chat_id, user_id, sender
         
         # Insert row into Table
         cursor.execute("""
-            INSERT INTO conversation_messages (
-                conversation_id,
+            INSERT INTO conversation_threads (
+                thread_id,
                 chat_id,
                 user_id,
                 sender_role,
@@ -82,7 +93,7 @@ def save_message_to_conversation(conn, conversation_id, chat_id, user_id, sender
                 source_email_id   
             ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         """, (
-            conversation_id,
+            thread_id,
             chat_id,
             user_id,
             sender_role,
@@ -94,7 +105,7 @@ def save_message_to_conversation(conn, conversation_id, chat_id, user_id, sender
 
         # Commit to DB
         conn.commit()
-        print(f"[DB] Saved message to conversation {conversation_id} - role: {sender_role}")
+        print(f"[DB] Saved message to conversation {thread_id} - role: {sender_role}")
     except Exception as e:
         print(f"[DB ERROR] Failed to save message: {e}")
         conn.rollback()
@@ -103,12 +114,12 @@ def save_message_to_conversation(conn, conversation_id, chat_id, user_id, sender
 
 
 
-def get_conversation_id_by_telegram_message_id(conn, chat_id, telegram_message_id):
+def get_thread_id_by_telegram_message_id(conn, chat_id, telegram_message_id):
     cursor = conn.cursor()
     try:
-        # Querey the conversation_message table
+        # Querey the conversation_threads table
         cursor.execute("""
-                SELECT conversation_id
+                SELECT thread_id
                 FROM conversation_threads
                 WHERE chat_id = %s
                     AND telegram_message_id = %s
@@ -118,28 +129,28 @@ def get_conversation_id_by_telegram_message_id(conn, chat_id, telegram_message_i
         result = cursor.fetchone()
 
         if result:
-            conversation_id = result[0]
-            print(f"[DB] Found conversation_id: {conversation_id} for message_id: {telegram_message_id}")
-            return conversation_id
+            thread_id = result[0]
+            print(f"[DB] Found thread_id: {thread_id} for message_id: {telegram_message_id}")
+            return thread_id
         else:
-            print(f"[DB] No conversation_id found for message_id: {telegram_message_id}")
+            print(f"[DB] No thread_id found for message_id: {telegram_message_id}")
             return None
     except Exception as e:
-        print(f"[DB ERROR] Failed to get conversation_id: {e}")
+        print(f"[DB ERROR] Failed to get thread_id: {e}")
         return None
     finally:
         cursor.close()
 
-def get_conversation_history(conn, conversation_id, limit=10):
+def get_conversation_history(conn, thread_id, limit=10):
     cursor = conn.cursor(dictionary=True)
     try:
         cursor.execute("""
                 SELECT sender_role, message_text, timestamp
-                FROM conversation_messages
-                WHERE conversation_id = %s
+                FROM conversation_threads
+                WHERE thread_id = %s
                 ORDER BY timestamp ASC
                 LIMIT %s
-        """, (conversation_id, limit))
+        """, (thread_id, limit))
 
         results = cursor.fetchall()
 
@@ -147,11 +158,11 @@ def get_conversation_history(conn, conversation_id, limit=10):
         for result in results:
             if isinstance(result['timestamp'], datetime):
                 result['timestamp'] = result['timestamp'].strftime('%Y-%m-%d %H:%M:%S')
-        
-        print(f"[DB] Loaded {len(results)} messages for conversation_id: {conversation_id}")
+
+        print(f"[DB] Loaded {len(results)} messages for thread_id: {thread_id}")
         return results
     except Exception as e:
-        print(f"[DB ERROR] Failed to get conversation history: {e}")
+        print(f"[DB ERROR] Failed to get thread history: {e}")
         return []
     finally:
         cursor.close()

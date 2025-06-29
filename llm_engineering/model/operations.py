@@ -143,10 +143,10 @@ def editMessageLLM(message: str, edits: str, context: str) -> str:
         print(f"Error editing message: {e}")
         return "Clara was unable to edit the message. Please try again."
     
-def validateResponseLLM(response: str, message: str) -> str:
+def validateResponseLLM(response: str, conversation_history: str) -> str:
     client = GeminiClient()
-    prompt = validateResponsePrompt(response, message)
-    system_instruction = "You are a precise action item validator. Your task is to check if a response addresses all the action items mentioned in a message."
+    prompt = validateResponsePrompt(response, conversation_history)
+    system_instruction = "You are a precise action item validator. Your task is to check if a response addresses all the action items mentioned in the original message. You will be provided the conversation history to cross reference the action items and everything that has been discussed. Ensure every action item is addressed and cross reference with all the information provided in the conversation history."
 
     # Define the function declaration with correct type values
     validate_message_response_declaration = {

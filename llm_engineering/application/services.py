@@ -32,9 +32,9 @@ class Clara:
         response = editMessageLLM(input_message, input_edits, input_context)
         return response
 
-    def validateResponse(self, input_response: str, input_message: str):
+    def validateResponse(self, input_response: str, input_conversation_history: str):
         print("Validating response...")
-        response = validateResponseLLM(input_response, input_message)
+        response = validateResponseLLM(input_response, input_conversation_history)
         return response
     
     def requestMissingInformation(self, input_response: str, input_action_items_in_message: str, input_action_items_addressed: str, input_missing_information: str, input_suggested_corrections: str):

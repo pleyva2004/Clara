@@ -14,10 +14,17 @@ def main():
     message = client.createMessage(email_summary)
     print(message)
     validate_clara_message = client.validateMessage(message, email_summary, email)
+    message_history = [{
+        "sender_role": "bot",
+        "message_text": message,
+        "timestamp": "2025-06-29 15:30:00"
+    }
+    ]
+    json_message_history = json.dumps(message_history)
     print("--------------------------------")
     print(response)
     print("--------------------------------")
-    validate_user_response = client.validateResponse(response, message)
+    validate_user_response = client.validateResponse(response, json_message_history)
 
     if isinstance(validate_clara_message, str) or isinstance(validate_user_response, str):
         validate_clara_message_json = json.loads(validate_clara_message.replace('```json\n', '').replace('\n```', '').replace('```', '')) 

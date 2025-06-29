@@ -124,15 +124,39 @@ def editMessagePrompt(message: str, edits: str, context: str) -> str:
     """
     return prompt
 
-def validateResponsePrompt(response: str, email_summary: str) -> str:
+def validateResponsePrompt(response: str, conversation_history: str) -> str:
 
     prompt = f"""
     RESPONSE TO VALIDATE:
     {response}
 
     SOURCE INFORMATION:
-    1. Email Summary:
-    {email_summary}
+    This is an array of json objects. Each object contains the following fields:
+
+    - sender_role: "user" | "assistant"
+    - message_text: "string"
+    - timestamp: "string"
+
+    Example:
+
+    ```json
+    [
+        {{
+            "sender_role": "user",
+            "message_text": "Hello, I need help with my email.",
+            "timestamp": "2025-06-29 15:30:00"
+        }},
+        {{
+            "sender_role": "bot",
+            "message_text": "Sure, how can I assist you?",
+            "timestamp": "2025-06-29 15:31:00"
+        }},
+        # ... more messages ...
+    ]
+    ```
+
+    1. Conversation History:
+    {conversation_history}
     
     Validation Requirements:
 

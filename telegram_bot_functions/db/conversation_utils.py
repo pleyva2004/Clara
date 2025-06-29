@@ -1,26 +1,44 @@
 from datetime import datetime
 import json
-
+import os
+from data_pipeline.database_functions import get_connection
+from dotenv import load_dotenv
+load_dotenv()
+DB_USERNAME = os.getenv("DB_USERNAME")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
 
 # When Clara sends first message
-def create_conversation_thread(conn, thread_id, chat_id, source_email_id):
+def create_conversation_thread(thread_id, chat_id, bot_message, message_id, source_email_id):
+
+    conn = get_connection(
+        servername='sql1.njit.edu',
+        username=DB_USERNAME,
+        password=DB_PASSWORD,
+        dbname='lb356'
+    )
+    
     cursor = conn.cursor()
     try:
         # Create table if it doesn't exist
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS conversation_threads (
-                thread_id VARCHAR(255) PRIMARY KEY,
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                thread_id VARCHAR(255),
                 chat_id BIGINT NOT NULL,
+                user_id BIGINT,
+                sender_role ENUM('user', 'bot') NOT NULL,
+                message_text TEXT NOT NULL,
+                timestamp DATETIME NOT NULL,
+                telegram_message_id BIGINT NOT NULL,
                 source_email_id VARCHAR(255),
-                status VARCHAR(50) DEFAULT 'open',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                status ENUM('open', 'closed') NOT NULL DEFAULT 'open'
             )
         """)
         
         cursor.execute("""
-            INSERT INTO conversation_threads (thread_id, chat_id, source_email_id, status)
-            VALUES (%s, %s, %s, 'open')
-        """, (thread_id, chat_id, source_email_id))
+            INSERT INTO conversation_threads (thread_id, chat_id, user_id, sender_role, message_text, timestamp, telegram_message_id, source_email_id)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        """, (thread_id, chat_id, None, 'bot', bot_message, datetime.now(), message_id, source_email_id))
 
         conn.commit()
         print(f"[DB] Created new conversation thread: {thread_id} (open)")
@@ -29,9 +47,18 @@ def create_conversation_thread(conn, thread_id, chat_id, source_email_id):
         conn.rollback()
     finally:
         cursor.close()
+        conn.close()
 
 
-def close_conversation_thread(conn, thread_id):
+def close_conversation_thread(thread_id):
+
+    conn = get_connection(
+        servername='sql1.njit.edu',
+        username=DB_USERNAME,
+        password=DB_PASSWORD,
+        dbname='lb356'
+    )
+    
     cursor = conn.cursor()
     try:
         cursor.execute("""
@@ -47,9 +74,18 @@ def close_conversation_thread(conn, thread_id):
         conn.rollback()
     finally:
         cursor.close()
+        conn.close()
 
 
-def get_conversation_status(conn, thread_id):
+def get_conversation_status(thread_id):
+
+    conn = get_connection(
+        servername='sql1.njit.edu',
+        username=DB_USERNAME,
+        password=DB_PASSWORD,
+        dbname='lb356'
+    )
+    
     cursor = conn.cursor()
     try:
         cursor.execute("""
@@ -65,9 +101,18 @@ def get_conversation_status(conn, thread_id):
         return None
     finally:
         cursor.close()
+        conn.close()
 
 
-def save_message_to_conversation(conn, thread_id, chat_id, user_id, sender_role, message_text, telegram_message_id, source_email_id, timestamp):
+def save_message_to_conversation(thread_id, chat_id, user_id, sender_role, message_text, telegram_message_id, source_email_id, timestamp):
+
+    conn = get_connection(
+        servername='sql1.njit.edu',
+        username=DB_USERNAME,
+        password=DB_PASSWORD,
+        dbname='lb356'
+    )
+    
     cursor = conn.cursor()
     try:
 
@@ -111,10 +156,18 @@ def save_message_to_conversation(conn, thread_id, chat_id, user_id, sender_role,
         conn.rollback()
     finally:
         cursor.close()
+        conn.close()
 
 
+def get_thread_id_by_telegram_message_id(chat_id, telegram_message_id):
 
-def get_thread_id_by_telegram_message_id(conn, chat_id, telegram_message_id):
+    conn = get_connection(
+        servername='sql1.njit.edu',
+        username=DB_USERNAME,
+        password=DB_PASSWORD,
+        dbname='lb356'
+    )
+    
     cursor = conn.cursor()
     try:
         # Querey the conversation_threads table
@@ -140,8 +193,18 @@ def get_thread_id_by_telegram_message_id(conn, chat_id, telegram_message_id):
         return None
     finally:
         cursor.close()
+        conn.close()
 
-def get_conversation_history(conn, thread_id, limit=10):
+
+def get_conversation_history(thread_id, limit=10):
+
+    conn = get_connection(
+        servername='sql1.njit.edu',
+        username=DB_USERNAME,
+        password=DB_PASSWORD,
+        dbname='lb356'
+    )
+    
     cursor = conn.cursor(dictionary=True)
     try:
         cursor.execute("""
@@ -166,3 +229,4 @@ def get_conversation_history(conn, thread_id, limit=10):
         return []
     finally:
         cursor.close()
+        conn.close()

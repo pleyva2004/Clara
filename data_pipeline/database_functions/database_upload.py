@@ -1,5 +1,7 @@
 import json
 import re
+import os
+from data_pipeline.database_functions.connect import get_connection
 
 # Takes the already parsed data and puts it into the database
 '''
@@ -7,9 +9,24 @@ Takes 2 parameters:
     conn: The connection function status which checks to see if we connected to the database
     file_path: The path of the json file to be inserted into the database
 '''
-def extract(conn, file_path):
+
+
+def extract(file_path):
+
+    DB_USERNAME = os.getenv("DB_USERNAME")
+    DB_PASSWORD = os.getenv("DB_PASSWORD")
+
+    conn = get_connection(
+        servername='sql1.njit.edu',
+        username=DB_USERNAME,
+        password=DB_PASSWORD,
+        dbname='lb356'
+    )
+
     if conn == None:
-        return "Connection Failed"
+        print("Connection Failed")
+        return
+    
     
     try:
         # Try and open Json file

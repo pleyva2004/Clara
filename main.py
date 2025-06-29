@@ -1,10 +1,10 @@
 from data_pipeline.email_functions import monitor_inbox, getEmail
-from data_pipeline.database_functions import extract, get_connection
+from data_pipeline.database_functions import extract
 from telegram_bot.create_connection import connect_telegram
 from telegram_bot.send_messages import send_bot_message
 from telegram_bot.group_exists import isGroup
 from llm_engineering import Clara
-from telegram_bot_functions.db import create_conversation_thread
+from telegram_bot_functions.db.conversation_utils import create_conversation_thread
 
 from dotenv import load_dotenv
 import os
@@ -14,8 +14,6 @@ def main():
     load_dotenv()
     EMAIL_ADDRESS = os.getenv("MAIL_USERNAME")
     PASSWORD = os.getenv("MAIL_PASSWORD")
-    DB_USERNAME = os.getenv("DB_USERNAME")
-    DB_PASSWORD = os.getenv("DB_PASSWORD")
     print(f"Starting to monitor inbox for {EMAIL_ADDRESS}")
     
     if monitor_inbox(EMAIL_ADDRESS, PASSWORD):
@@ -69,8 +67,7 @@ def main():
 
         # Call the DATA BASE FUNCTIONS HERE
         json_file_path = "./assets/temp.json" # Must give a path the the 
-        conn = get_connection("sql1.njit.edu", DB_USERNAME, DB_PASSWORD, "lb356") 
-        extract(conn, json_file_path)
+        extract(json_file_path)
 
         # Call CLARA HERE
         client = Clara()
@@ -110,8 +107,11 @@ def main():
         # Send the message
         print("Sending Message...")
         # Create conversation thread in DB
-        create_conversation_thread(conn, thread_id, chat_id, sender)
-        send_bot_message(bot_token, chat_id, message)
+        message_id = send_bot_message(bot_token, chat_id, message)
+        if message_id:
+            create_conversation_thread(thread_id, chat_id, message, message_id, sender)
+        else:
+            print("Failed to send message")
         print(f"Message sent to {group!r}")
 
 

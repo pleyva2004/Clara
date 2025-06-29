@@ -11,16 +11,6 @@ def run_telegram_bot():
 
     app = Application.builder().token(os.getenv("TELEGRAM_BOT_TOKEN")).build()
 
-    conn = get_connection(
-        servername='sql1.njit.edu',
-        username=DB_USERNAME,
-        password=DB_PASSWORD,
-        dbname='lb356'
-    )
-
-    # Store it in bot_data so all handlers can access it
-    app.bot_data["db_conn"] = conn
-
     # App handler
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))
     # Vote_message_handler using /vote

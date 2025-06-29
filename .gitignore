@@ -402,3 +402,4 @@ FodyWeavers.xsd
 # Credentials
 credentials.json
 .env
+CLAUDE.md

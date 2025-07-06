@@ -403,3 +403,9 @@ FodyWeavers.xsd
 credentials.json
 .env
 CLAUDE.md
+
+# Session files
+*.session
+
+# Assets
+assets/temp.json

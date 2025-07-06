@@ -100,15 +100,16 @@ def main():
         chat_id = telegram_client.get_entity(group_name) # Gets the basic group id
         chat_id = "-100" + str(chat_id.id) # Add -100 because super group requires it
 
-        # Grab the thread id
-        thread_id = telegram_client.get_input_entity(group_name).channel_id
-        print(f"Thread ID: {thread_id}")
-
-        # Send the message
+        # Send the message first to get the actual thread/message ID
         print("Sending Message...")
-        # Create conversation thread in DB
         message_id = send_bot_message(bot_token, chat_id, message)
+        
         if message_id:
+            # Use the actual Telegram message ID as the thread_id
+            thread_id = message_id
+            print(f"Thread ID (using message ID): {thread_id}")
+            
+            # Create conversation thread in DB with the actual message ID as thread_id
             create_conversation_thread(thread_id, chat_id, message, message_id, sender)
         else:
             print("Failed to send message")
